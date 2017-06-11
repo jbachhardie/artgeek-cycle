@@ -2,28 +2,17 @@
     "rules": {
         "member-access": true,
         "no-reference": true,
-        "typedef": [true, "call-signature", "call-signature", "parameter", "property-declaration", "member-variable-declaration"],
-        "typedef-whitespace": [
+        "typedef": [
             true,
-            {
-                "call-signature": "onespace",
-                "index-signature": "onespace",
-                "parameter": "onespace",
-                "property-declaration": "onespace",
-                "variable-declaration": "onespace"
-            },
-            {
-                "call-signature": "onespace",
-                "index-signature": "onespace",
-                "parameter": "onespace",
-                "property-declaration": "onespace",
-                "variable-declaration": "onespace"
-            }
+            "call-signature",
+            "call-signature",
+            "parameter",
+            "property-declaration",
+            "member-variable-declaration"
         ],
-        "curly": true,
         "no-duplicate-variable": true,
-        "no-empty": true,
         "no-eval": true,
+        "no-unused-variable": true,
         "no-null-keyword": true,
         "no-shadowed-variable": true,
         "no-use-before-declare": true,
@@ -32,13 +21,7 @@
         "triple-equals": true,
         "use-isnan": true,
         "prefer-const": true,
-        "trailing-comma": [true, {"multiline": "never", "singleline": "never"}],
         "class-name": true,
-        "no-angle-bracket-type-assertion": true,
-        "no-consecutive-blank-lines": true,
-        "quotemark": [true, "single"],
-        "semicolon": [true, "always"],
-        "space-before-function-paren": [true, "never"],
-        "whitespace": [true, "check-decl", "check-operator", "check-module", "check-type"]
+        "no-angle-bracket-type-assertion": true
     }
 }

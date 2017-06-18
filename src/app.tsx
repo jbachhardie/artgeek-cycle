@@ -6,7 +6,7 @@ import { Entry, EntryCollection } from 'contentful';
 import { StateSource, Lens } from 'cycle-onionify';
 import { style, media, types as TypeStyle } from 'typestyle';
 import { px, rem } from 'csx';
-import { padding, margin } from 'csstips';
+import { padding } from 'csstips';
 
 import { Sources as RootSources, Exhibition, Gallery } from './interfaces';
 
@@ -70,7 +70,10 @@ namespace Styles {
     textTransform: 'uppercase'
   };
 
-  export const appClass = style(padding(0, rem(2)));
+  export const appClass = style(
+    { maxWidth: px(1200), margin: 'auto' },
+    padding(0, rem(2))
+  );
 
   export const titleHeadingClass = style(
     {
@@ -223,7 +226,7 @@ function model(
             selection: {
               exhibition: selectedExhibition,
               gallery: selectedExhibition.gallery.fields,
-              color: payload.exhibitionTitle
+              color: payload.color
             }
           };
         }

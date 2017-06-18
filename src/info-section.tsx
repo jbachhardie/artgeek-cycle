@@ -2,17 +2,17 @@ import xs, { Stream } from 'xstream';
 import { VNode } from '@cycle/dom';
 import { StateSource } from 'cycle-onionify';
 
-import { Sources } from './interfaces';
+import { Sources as RootSources } from './interfaces';
 import { SelectedItem } from './app';
 
-export type InfoSectionSources = Sources & {
-  onion: StateSource<InfoSectionState>;
+export type Sources = RootSources & {
+  onion: StateSource<State>;
 };
-export type InfoSectionSinks = { DOM: Stream<VNode>; onion: Stream<Reducer> };
-export type Reducer = (prev: InfoSectionState) => InfoSectionState;
-export type InfoSectionState = SelectedItem;
+export type Sinks = { DOM: Stream<VNode>; onion: Stream<Reducer> };
+export type Reducer = (prev: State) => State;
+export type State = SelectedItem;
 
-export function InfoSection(sources: InfoSectionSources): InfoSectionSinks {
+export function InfoSection(sources: Sources): Sinks {
   const vdom$: Stream<VNode> = view(sources.onion.state$);
 
   return {
@@ -21,7 +21,7 @@ export function InfoSection(sources: InfoSectionSources): InfoSectionSinks {
   };
 }
 
-function view(state$: Stream<InfoSectionState>): Stream<VNode> {
+function view(state$: Stream<State>): Stream<VNode> {
   const init$ = xs.of(<div />);
   const vdom$ = state$.map(state => <div>{state.exhibition}</div>);
   return xs.merge(init$, vdom$);

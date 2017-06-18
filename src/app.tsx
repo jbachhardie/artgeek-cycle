@@ -1,28 +1,25 @@
 import xs, { Stream } from 'xstream';
 import { VNode, DOMSource } from '@cycle/dom';
 import isolate from '@cycle/isolate';
-import {
-  RequestOptions,
-  ContentfulSource,
-  Response
-} from './contentful-driver';
+import * as moment from 'moment';
 import { Entry, EntryCollection } from 'contentful';
 import { StateSource, Lens } from 'cycle-onionify';
 
 import { Sources as RootSources, Exhibition, Gallery } from './interfaces';
 
 import {
-  BubbleMenu,
-  BubbleMenuSources,
-  BubbleMenuState,
-  BubbleMenuSinks
-} from './bubble-menu';
+  RequestOptions,
+  ContentfulSource,
+  Response
+} from './contentful-driver';
+
+import { BubbleMenu, State as BubbleMenuState } from './bubble-menu';
 
 import {
   InfoSection,
-  InfoSectionSources,
-  InfoSectionState,
-  InfoSectionSinks
+  Sources as InfoSectionSources,
+  State as InfoSectionState,
+  Sinks as InfoSectionSinks
 } from './info-section';
 
 export interface AppConfig {
@@ -65,12 +62,16 @@ export function App(sources: Sources): Sinks {
     const bubbleLens: Lens<State, BubbleMenuState> = {
       get: state => {
         if (state && state.config) {
-          return state.exhibitions.map((item, index) => ({
-            id: item.title,
-            thumbnail: item.thumbnail.fields.file.url,
-            isUpcoming: new Date(item.begins) > new Date(),
-            color: state.config!.colors[index]
-          }));
+          return state.exhibitions
+            .filter(item => {
+              return moment(item.ends).hour(23).isAfter(moment());
+            })
+            .map((item, index) => ({
+              id: item.title,
+              thumbnail: item.thumbnail.fields.file.url,
+              isUpcoming: moment(item.begins).isAfter(moment()),
+              color: state.config!.colors[index]
+            }));
         } else {
           return undefined;
         }
@@ -78,9 +79,9 @@ export function App(sources: Sources): Sinks {
       set: (state, childState) => state
     };
 
-    const bubbleMenuSinks: BubbleMenuSinks = isolate(BubbleMenu, {
+    const bubbleMenuSinks: Sinks = isolate(BubbleMenu, {
       onion: bubbleLens
-    })((sources as any) as BubbleMenuSources);
+    })((sources as any) as Sources);
 
     return bubbleMenuSinks;
   };

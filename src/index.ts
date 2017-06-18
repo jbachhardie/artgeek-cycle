@@ -4,6 +4,7 @@ import { makeDOMDriver } from '@cycle/dom';
 import { makeHTTPDriver } from '@cycle/http';
 import { makeContentfulDriver } from './contentful-driver';
 import onionify from 'cycle-onionify';
+import { normalize, setupPage } from 'csstips';
 
 import { Component, Sources, RootSinks } from './interfaces';
 import { App } from './app';
@@ -29,3 +30,5 @@ const defaultSinks: (s: Sources) => RootSinks = sources => ({
 });
 
 run(defaultSinks, drivers);
+normalize();
+setupPage('#app');

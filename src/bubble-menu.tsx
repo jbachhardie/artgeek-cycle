@@ -2,18 +2,18 @@ import xs, { Stream } from 'xstream';
 import isolate from '@cycle/isolate';
 import { StateSource, pick, mix } from 'cycle-onionify';
 
-import { Sources } from './interfaces';
-import { BubbleState, Bubble } from './bubble';
+import { Sources as RootSources } from './interfaces';
+import { State as BubbleState, Bubble } from './bubble';
 import { VNode } from '@cycle/dom/lib';
 
-export type BubbleMenuSources = Sources & {
-  onion: StateSource<BubbleMenuState>;
+export type Sources = RootSources & {
+  onion: StateSource<State>;
 };
-export type BubbleMenuSinks = { DOM: Stream<VNode>; onion: Stream<Reducer> };
-export type Reducer = (prev: BubbleMenuState) => BubbleMenuState;
-export type BubbleMenuState = Array<BubbleState>;
+export type Sinks = { DOM: Stream<VNode>; onion: Stream<Reducer> };
+export type Reducer = (prev: State) => State;
+export type State = Array<BubbleState>;
 
-export function BubbleMenu(sources: BubbleMenuSources): BubbleMenuSinks {
+export function BubbleMenu(sources: Sources): Sinks {
   const array$ = sources.onion.state$;
 
   const childrenSinks$ = array$.map(array =>

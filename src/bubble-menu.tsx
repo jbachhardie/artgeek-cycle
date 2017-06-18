@@ -2,13 +2,14 @@ import xs, { Stream } from 'xstream';
 import isolate from '@cycle/isolate';
 import { StateSource, pick, mix } from 'cycle-onionify';
 
-import { Sources, Sinks } from './interfaces';
+import { Sources } from './interfaces';
 import { BubbleState, Bubble } from './bubble';
+import { VNode } from '@cycle/dom/lib';
 
 export type BubbleMenuSources = Sources & {
   onion: StateSource<BubbleMenuState>;
 };
-export type BubbleMenuSinks = Sinks & { onion: Stream<Reducer> };
+export type BubbleMenuSinks = { DOM: Stream<VNode>; onion: Stream<Reducer> };
 export type Reducer = (prev: BubbleMenuState) => BubbleMenuState;
 export type BubbleMenuState = Array<BubbleState>;
 

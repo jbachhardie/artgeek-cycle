@@ -4,6 +4,9 @@ import isolate from '@cycle/isolate';
 import * as moment from 'moment';
 import { Entry, EntryCollection } from 'contentful';
 import { StateSource, Lens } from 'cycle-onionify';
+import { style, media, types as TypeStyle } from 'typestyle';
+import { px, rem } from 'csx';
+import { padding, margin } from 'csstips';
 
 import { Sources as RootSources, Exhibition, Gallery } from './interfaces';
 
@@ -60,6 +63,36 @@ export type Sinks = {
 };
 
 export type Reducer = (prev?: State) => State | undefined;
+
+namespace Styles {
+  const headingStyle: TypeStyle.CSSProperties = {
+    color: '#462065',
+    textTransform: 'uppercase'
+  };
+
+  export const appClass = style(padding(0, rem(2)));
+
+  export const titleHeadingClass = style(
+    {
+      textAlign: 'center',
+      marginBottom: 0
+    },
+    headingStyle,
+    media({ minWidth: 600 }, { fontSize: rem(5) }),
+    media({ minWidth: 0, maxWidth: 599 }, { fontSize: rem(2.5) })
+  );
+
+  export const headingHighlightClass = style({
+    color: '#fe7a5a',
+    fontWeight: 'bold'
+  });
+
+  export const menuSectionClass = style({
+    maxWidth: px(1200),
+    textAlign: 'center'
+  });
+  export const menuHeadingClass = style({ textAlign: 'left' }, headingStyle);
+}
 
 export function App(sources: Sources): Sinks {
   const setupBubbleMenu = () => {
@@ -203,12 +236,18 @@ function model(
 
 function view(childVDom$: Stream<[VNode, VNode]>): Stream<VNode> {
   return childVDom$.map(([bubbleMenu, infoSection]) =>
-    <div>
+    <div className={Styles.appClass}>
       <section>
-        <h1>The ArtGeek Guide <strong>To Dundee</strong></h1>
+        <h1 className={Styles.titleHeadingClass}>
+          The ArtGeek Guide
+          {' '}
+          <strong className={Styles.headingHighlightClass}>
+            To Dundee
+          </strong>
+        </h1>
       </section>
-      <section>
-        <h2>This month's exhibits</h2>
+      <section className={Styles.menuSectionClass}>
+        <h2 className={Styles.menuHeadingClass}>This month's exhibits</h2>
         {bubbleMenu}
       </section>
       <section>

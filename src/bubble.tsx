@@ -60,6 +60,7 @@ function intent(state$: Stream<State>, domSource: DOMSource): Stream<Action> {
     .select('.' + bubbleImageClass)
     .events('click', { preventDefault: true });
 
+  // tslint:disable-next-line:no-unused-variable
   const action$ = xs.combine(click$, state$).map<Action>(([_, state]) => ({
     type: 'SET_SELECTION',
     payload: { exhibitionTitle: state.exhibitionTitle, color: state.color }

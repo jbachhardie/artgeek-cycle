@@ -22,7 +22,8 @@ export function InfoSection(sources: Sources): Sinks {
 }
 
 function view(state$: Stream<State>): Stream<VNode> {
-  const init$ = xs.of(<div />);
-  const vdom$ = state$.map(state => <div>{state.exhibition}</div>);
-  return xs.merge(init$, vdom$);
+  const vdom$ = state$.map(state =>
+    <div>{JSON.stringify(state.exhibition)}</div>
+  );
+  return vdom$.startWith(<div />);
 }

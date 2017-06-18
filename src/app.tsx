@@ -13,7 +13,11 @@ import {
   Response
 } from './contentful-driver';
 
-import { BubbleMenu, State as BubbleMenuState } from './bubble-menu';
+import {
+  BubbleMenu,
+  State as BubbleMenuState,
+  Sinks as BubbleMenuSinks
+} from './bubble-menu';
 
 import {
   InfoSection,
@@ -42,7 +46,7 @@ export type State = {
 
 export interface SetSelection {
   type: 'SET_SELECTION';
-  payload: string;
+  payload: { exhibitionTitle: string; color: string };
 }
 
 export type Action = SetSelection;
@@ -55,7 +59,7 @@ export type Sinks = {
   onion: Stream<Reducer>;
 };
 
-export type Reducer = (prev?: State) => State;
+export type Reducer = (prev?: State) => State | undefined;
 
 export function App(sources: Sources): Sinks {
   const setupBubbleMenu = () => {
@@ -67,7 +71,7 @@ export function App(sources: Sources): Sinks {
               return moment(item.ends).hour(23).isAfter(moment());
             })
             .map((item, index) => ({
-              id: item.title,
+              exhibitionTitle: item.title,
               thumbnail: item.thumbnail.fields.file.url,
               isUpcoming: moment(item.begins).isAfter(moment()),
               color: state.config!.colors[index]
@@ -79,7 +83,7 @@ export function App(sources: Sources): Sinks {
       set: (state, childState) => state
     };
 
-    const bubbleMenuSinks: Sinks = isolate(BubbleMenu, {
+    const bubbleMenuSinks: BubbleMenuSinks = isolate(BubbleMenu, {
       onion: bubbleLens
     })((sources as any) as Sources);
 
@@ -108,8 +112,8 @@ export function App(sources: Sources): Sinks {
   const bubbleMenuSinks = setupBubbleMenu();
   const infoSectionSinks = setupInfoSection();
 
-  const { request$, action$ } = intent(sources.onion.state$, sources.DOM);
-  const reducer$ = model(action$, sources.contentful);
+  const { request$ } = intent(sources.onion.state$, sources.DOM);
+  const reducer$ = model(bubbleMenuSinks.action, sources.contentful);
   const vdom$ = view(xs.combine(bubbleMenuSinks.DOM, infoSectionSinks.DOM));
 
   return {
@@ -122,7 +126,7 @@ export function App(sources: Sources): Sinks {
 function intent(
   state$: Stream<State>,
   domSource: DOMSource
-): { request$: Stream<RequestOptions>; action$: Stream<Action> } {
+): { request$: Stream<RequestOptions> } {
   const buildRequest$ = () => {
     const initConfig$: Stream<RequestOptions> = xs.of<RequestOptions>({
       method: 'getEntry',
@@ -140,13 +144,8 @@ function intent(
     return xs.merge(initConfig$, initExhibitions$);
   };
 
-  const buildAction$ = () => {
-    return xs.never();
-  };
-
   return {
-    request$: buildRequest$(),
-    action$: buildAction$()
+    request$: buildRequest$()
   };
 }
 
@@ -178,7 +177,28 @@ function model(
     .flatten()
     .map(loadExhibitions);
 
-  return xs.merge(init$, loadConfig$, loadExhibitions$);
+  const setSelection$ = action$
+    .filter(({ type }) => type === 'SET_SELECTION')
+    .map<Reducer>(({ payload }) => prevState => {
+      if (prevState && prevState.config) {
+        const selectedExhibition = prevState.exhibitions.find(
+          item => item.title === payload.exhibitionTitle
+        );
+        if (selectedExhibition) {
+          return {
+            ...prevState,
+            selection: {
+              exhibition: selectedExhibition,
+              gallery: selectedExhibition.gallery.fields,
+              color: payload.exhibitionTitle
+            }
+          };
+        }
+      }
+      return prevState;
+    });
+
+  return xs.merge(init$, loadConfig$, loadExhibitions$, setSelection$);
 }
 
 function view(childVDom$: Stream<[VNode, VNode]>): Stream<VNode> {

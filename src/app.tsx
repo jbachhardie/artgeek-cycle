@@ -6,7 +6,7 @@ import { Entry, EntryCollection } from 'contentful';
 import { StateSource, Lens } from 'cycle-onionify';
 import { style, media, types as TypeStyle } from 'typestyle';
 import { px, rem } from 'csx';
-import { padding } from 'csstips';
+import { padding, vertical, verticallySpaced } from 'csstips';
 
 import { Sources as RootSources, Exhibition, Gallery } from './interfaces';
 
@@ -72,7 +72,9 @@ namespace Styles {
 
   export const appClass = style(
     { maxWidth: px(1200), margin: 'auto' },
-    padding(0, rem(2))
+    padding(0, rem(2)),
+    vertical,
+    verticallySpaced(20)
   );
 
   export const titleHeadingClass = style(
@@ -95,6 +97,8 @@ namespace Styles {
     textAlign: 'center'
   });
   export const menuHeadingClass = style({ textAlign: 'left' }, headingStyle);
+
+  export const infoSectionClass = style({ paddingTop: rem(4) });
 }
 
 export function App(sources: Sources): Sinks {
@@ -253,7 +257,7 @@ function view(childVDom$: Stream<[VNode, VNode]>): Stream<VNode> {
         <h2 className={Styles.menuHeadingClass}>This month's exhibits</h2>
         {bubbleMenu}
       </section>
-      <section>
+      <section className={Styles.infoSectionClass}>
         {infoSection}
       </section>
     </div>

@@ -1,7 +1,7 @@
 import xs, { Stream } from 'xstream';
 import { VNode, DOMSource } from '@cycle/dom';
 import { StateSource } from 'cycle-onionify';
-import { style } from 'typestyle';
+import { style, classes } from 'typestyle';
 import { em, px, percent } from 'csx';
 
 import { Sources as RootSources } from './interfaces';
@@ -21,28 +21,32 @@ export type State = {
   isUpcoming: boolean;
 };
 
-export const bubbleClass = style({
-  display: 'inline-block',
-  margin: em(0.5),
-  textDecoration: 'none'
-});
+namespace Styles {
+  export const bubbleClass = style({
+    display: 'inline-block',
+    margin: em(0.5),
+    textDecoration: 'none'
+  });
 
-export const bubbleImageClass = style({
-  height: px(120),
-  width: px(120),
-  borderRadius: percent(50),
-  padding: px(10)
-});
+  export const bubbleImageClass = style({
+    height: px(120),
+    width: px(120),
+    borderRadius: percent(50),
+    padding: px(10)
+  });
 
-export const bubbleOverlayClass = style({
-  fontWeight: 'bold',
-  fontSize: 'large',
-  textTransform: 'uppercase',
-  position: 'relative',
-  top: px(84),
-  width: px(120),
-  textAlign: 'center'
-});
+  export const bubbleOverlayClass = style({
+    fontWeight: 'bold',
+    fontSize: 'large',
+    textTransform: 'uppercase',
+    position: 'relative',
+    top: px(84),
+    width: px(120),
+    textAlign: 'center'
+  });
+
+  export const clickableClass = style();
+}
 
 export function Bubble(sources: Sources): Sinks {
   const vdom$: Stream<VNode> = view(sources.onion.state$);
@@ -57,7 +61,7 @@ export function Bubble(sources: Sources): Sinks {
 
 function intent(state$: Stream<State>, domSource: DOMSource): Stream<Action> {
   const click$ = domSource
-    .select('.' + bubbleImageClass)
+    .select('.' + Styles.clickableClass)
     .events('click', { preventDefault: true });
 
   // tslint:disable-next-line:no-unused-variable
@@ -71,15 +75,21 @@ function intent(state$: Stream<State>, domSource: DOMSource): Stream<Action> {
 
 function view(state$: Stream<State>): Stream<VNode> {
   return state$.map(({ exhibitionTitle, color, thumbnail, isUpcoming }) =>
-    <a href="#info" id={exhibitionTitle} className={bubbleClass}>
+    <a href="#info" id={exhibitionTitle} className={Styles.bubbleClass}>
       {isUpcoming
-        ? <div className={bubbleOverlayClass} style={{ color: color } as any}>
+        ? <div
+            className={classes(
+              Styles.bubbleOverlayClass,
+              Styles.clickableClass
+            )}
+            style={{ color: color } as any}
+          >
             Coming Soon
           </div>
         : undefined}
       <img
         src={thumbnail}
-        className={bubbleImageClass}
+        className={classes(Styles.clickableClass, Styles.bubbleImageClass)}
         style={{ backgroundColor: color } as any}
       />
     </a>

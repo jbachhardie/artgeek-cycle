@@ -1,9 +1,8 @@
 import xs, { Stream } from 'xstream';
 import { VNode } from '@cycle/dom';
 import { StateSource } from 'cycle-onionify';
-import { style, media, types as TypeStyle } from 'typestyle';
-import { px, rem, percent } from 'csx';
-import { padding, margin } from 'csstips';
+import { style, media } from 'typestyle';
+import { px, percent } from 'csx';
 
 import { Sources as RootSources, Exhibition } from './interfaces';
 
@@ -19,16 +18,11 @@ namespace Styles {
   const innerCircleWidth = 640 - borderWidth * 2;
   export const containerClass = style(
     {
-      background: 'white'
+      fill: 'white',
+      position: 'static'
     },
-    media(
-      { minWidth: 0, maxWidth: 599 },
-      { borderRadius: px(20), position: 'static' }
-    ),
-    media(
-      { minWidth: 600, maxWidth: 1149 },
-      { borderRadius: px(50), position: 'static' }
-    ),
+    media({ minWidth: 0, maxWidth: 599 }, { borderRadius: px(20) }),
+    media({ minWidth: 600, maxWidth: 1149 }, { borderRadius: px(50) }),
     media(
       { minWidth: 1150 },
       {
@@ -46,7 +40,7 @@ namespace Styles {
     media(
       { minWidth: 0, maxWidth: 599 },
       {
-        width: percent(100),
+        width: 'auto',
         height: 'auto',
         borderRadius: [px(20), px(20), 0, 0].join(' ')
       }
@@ -54,7 +48,7 @@ namespace Styles {
     media(
       { minWidth: 600, maxWidth: 1149 },
       {
-        width: percent(100),
+        width: 'auto',
         height: 'auto',
         borderRadius: [px(50), px(50), 0, 0].join(' ')
       }
@@ -72,7 +66,7 @@ namespace Styles {
   );
 }
 
-export function ExhibitionInfo(sources: Sources): Sinks {
+export function Component(sources: Sources): Sinks {
   const vdom$: Stream<VNode> = view(sources.onion.state$);
 
   return {
@@ -83,13 +77,15 @@ export function ExhibitionInfo(sources: Sources): Sinks {
 
 function view(state$: Stream<State>): Stream<VNode> {
   const vdom$ = state$.map(({ blurb, image, title }) =>
-    <div className={Styles.containerClass}>
-      <img src={image.fields.file.url} className={Styles.imageClass} />
-      <div>
-        <h3>{title}</h3>
-        <div>{blurb}</div>
-      </div>
-    </div>
+    <svg attrs-class={Styles.containerClass}>
+      <circle cx="300px" cy="300px" r="300px" />
+      <image
+        {...{ 'xlink:href': image.fields.file.url }}
+        className={Styles.imageClass}
+      />
+      <text y="15px" style={{ fill: 'black' } as any}>{title}</text>
+      <text y="15px" style={{ fill: 'black' } as any}>{blurb}</text>
+    </svg>
   );
   return vdom$;
 }

@@ -5,14 +5,10 @@ import { StateSource, Lens } from 'cycle-onionify';
 
 import { Sources as RootSources } from './interfaces';
 import { SelectedItem } from './app';
-import {
-  ExhibitionInfo,
-  State as ExhibitionInfoState,
-  Sinks as ExhibitionInfoSinks,
-  Sources as ExhibitionInfoSources
-} from './exhibition-info';
+import * as ExhibitionInfo from './exhibition-info';
+import * as LocationInfo from './location-info';
 import { style, media } from 'typestyle';
-import { percent, px } from 'csx';
+import { percent, px, rem } from 'csx';
 import { padding } from 'csstips/lib';
 
 export type Sources = RootSources & {
@@ -48,7 +44,7 @@ namespace Styles {
 
 export function InfoSection(sources: Sources): Sinks {
   const setupExhibitionInfo = () => {
-    const exhibitionInfoLens: Lens<State, ExhibitionInfoState> = {
+    const exhibitionInfoLens: Lens<State, ExhibitionInfo.State> = {
       get: state => {
         if (state) {
           return state.exhibition;
@@ -59,17 +55,47 @@ export function InfoSection(sources: Sources): Sinks {
       set: (state, childState) => state
     };
 
-    const exhibitionInfoSinks: ExhibitionInfoSinks = isolate(ExhibitionInfo, {
-      onion: exhibitionInfoLens
-    })(sources);
+    const exhibitionInfoSinks: ExhibitionInfo.Sinks = isolate(
+      ExhibitionInfo.Component,
+      {
+        onion: exhibitionInfoLens
+      }
+    )(sources);
 
     return exhibitionInfoSinks;
   };
 
+  const setupLocationInfo = () => {
+    const locationInfoLens: Lens<State, LocationInfo.State> = {
+      get: state => {
+        if (state) {
+          return { color: state.color, gallery: state.gallery };
+        } else {
+          return undefined;
+        }
+      },
+      set: (state, childState) => state
+    };
+
+    const locationInfoSinks: LocationInfo.Sinks = isolate(
+      LocationInfo.Component,
+      {
+        onion: locationInfoLens
+      }
+    )(sources);
+
+    return locationInfoSinks;
+  };
+
   const exhibitionInfoSinks = setupExhibitionInfo();
+  const locationInfoSinks = setupLocationInfo();
+
   const vdom$: Stream<VNode> = view(
-    sources.onion.state$,
-    exhibitionInfoSinks.DOM
+    xs.combine(
+      sources.onion.state$,
+      exhibitionInfoSinks.DOM,
+      locationInfoSinks.DOM
+    )
   );
 
   return {
@@ -78,13 +104,9 @@ export function InfoSection(sources: Sources): Sinks {
   };
 }
 
-function view(
-  state$: Stream<State>,
-  exhibitionInfoVDom$: Stream<VNode>
-): Stream<VNode> {
-  const vdom$ = xs
-    .combine(state$, exhibitionInfoVDom$)
-    .map(([state, exhibitionInfoVDom]) => {
+function view(combined$: Stream<[State, VNode, VNode]>): Stream<VNode> {
+  const vdom$ = combined$.map(
+    ([state, exhibitionInfoVDom, locationInfoVDom]) => {
       if (state.exhibition) {
         return (
           <div
@@ -92,10 +114,12 @@ function view(
             style={{ backgroundColor: state.color } as any}
           >
             {exhibitionInfoVDom}
+            {locationInfoVDom}
           </div>
         );
       }
       return <div />;
-    });
+    }
+  );
   return vdom$.startWith(<div />);
 }

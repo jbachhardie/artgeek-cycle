@@ -8,8 +8,8 @@ import { SelectedItem } from './app';
 import * as ExhibitionInfo from './exhibition-info';
 import * as LocationInfo from './location-info';
 import { style, media } from 'typestyle';
-import { percent, px, rem } from 'csx';
-import { padding } from 'csstips/lib';
+import { percent, px } from 'csx';
+import { padding } from 'csstips';
 
 export type Sources = RootSources & {
   onion: StateSource<State>;
